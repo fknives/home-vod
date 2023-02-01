@@ -1,0 +1,6 @@
+.DS_Store
+certificate/*
+application/instance/*
+**/release.config.json
+**/deploy.sh
+__pycache__/
