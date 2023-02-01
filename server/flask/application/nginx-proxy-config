@@ -1,0 +1,64 @@
+# rate limiting: https://www.nginx.com/blog/rate-limiting-nginx/
+limit_req_zone $binary_remote_addr zone=ip:10m rate=5r/s;
+limit_req_zone $binary_remote_addr zone=restricted_ip:10m rate=10r/m;
+
+# http server
+server {
+    server_name _;
+    listen       8080  default_server;
+    return       404;
+}
+
+# https server
+server {
+    listen 443 ssl;
+    server_name home_vod_server;
+
+    ssl_certificate     /certificate/cert.pem;
+    ssl_certificate_key /certificate/key.pem;
+    ssl_protocols  TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers   on;
+
+    root /server;
+
+    # static media
+    location /media {
+        root /media-data/;
+        autoindex on;
+        auth_request /user/is_privileged;
+        limit_req zone=ip burst=12 delay=8;
+
+        # enable cache
+        expires 1d;
+        add_header Cache-Control "public, no-transform";
+
+        # kill cache
+        # add_header Last-Modified $date_gmt;
+        # add_header Cache-Control 'no-store, no-cache';
+        # if_modified_since off;
+        # expires off;
+        # etag off;
+    }
+
+    # flask server
+    location / {
+        include         uwsgi_params;
+        uwsgi_pass      unix:///tmp/myapp.sock;
+        limit_req zone=ip burst=12 delay=8;
+    }
+
+    # flask server login
+    location /login {
+        include         uwsgi_params;
+        uwsgi_pass      unix:///tmp/myapp.sock;
+        limit_req zone=restricted_ip burst=4;
+    }
+
+    # flask server otp_verification
+    location /otp_verification {
+        include         uwsgi_params;
+        uwsgi_pass      unix:///tmp/myapp.sock;
+        limit_req zone=restricted_ip burst=4;
+    }
+}
