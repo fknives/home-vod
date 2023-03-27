@@ -4,7 +4,7 @@ import sys
 def migration_0_to_1(db_path: str):
     db = sqlite3.connect(db_path, detect_types=sqlite3.PARSE_DECLTYPES)
     db_cursor = db.cursor()
-    db_cursor.execute("ALTER TABLE session ADD media_token TEXT NOT NULL;")
+    db_cursor.execute("ALTER TABLE session ADD media_token TEXT NOT NULL DEFAULT '';")
     db.commit()
     db.close()
 
