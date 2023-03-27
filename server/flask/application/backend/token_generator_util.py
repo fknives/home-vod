@@ -24,6 +24,7 @@ def generate_session(user_id, byte_count = None, access_expires_in = None, refre
     return Session(
         user_id = user_id,
         access_token = token_urlsafe(byte_count),
+        media_token = token_urlsafe(byte_count),
         refresh_token = token_urlsafe(byte_count),
         access_expires_at = access_expires_in + current_time,
         refresh_expires_at = refresh_expires_in + current_time,

@@ -1,12 +1,10 @@
 import os
 import unittest
 import unittest.mock
-from .context import create_app, default_test_config
+from .context import create_app, default_test_config, create_test_session
 from backend.data import db
-from backend.data import dao_users
 from backend.data import dao_session
 from backend.data.data_models import Session
-from backend.data.data_models import RegisteringUser
 
 class LogoutUnitTest(unittest.TestCase):
  
@@ -50,10 +48,10 @@ class LogoutUnitTest(unittest.TestCase):
 
     @unittest.mock.patch('time.time', return_value=1000)
     def test_given_valid_session_returns_and_session_is_invalidated_ok(self, mock_time):
-        session = Session(
+        session = create_test_session(
             user_id=2,
             access_token='access',
-            refresh_token='refresh',
+            refresh_token="refresh",
             access_expires_at=1010,
             refresh_expires_at=1020
         )

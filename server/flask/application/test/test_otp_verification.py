@@ -6,7 +6,6 @@ from .context import create_app, default_test_config
 from backend.data import db
 from backend.data import dao_users
 from backend.data import dao_session
-from backend.data.data_models import Session
 from backend.data.data_models import RegisteringUser
 
 class OTP_VerificationUnitTest(unittest.TestCase):
@@ -149,7 +148,7 @@ class OTP_VerificationUnitTest(unittest.TestCase):
         )
         user_id = self.insert_user(user)
         correct_code = 585501 #for 1000 and base32secret3232
-        expected_keys = {'access_token', 'refresh_token', 'expires_at'}
+        expected_keys = {'access_token', 'media_token', 'refresh_token', 'expires_at'}
         
         data = {'username': 'myname', 'password': 'mypass', 'otp': '{}'.format(correct_code)}
         response = self.client.post(self.url_path, data=data)

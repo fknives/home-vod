@@ -26,7 +26,7 @@ server {
     location /media {
         root /media-data/;
         autoindex on;
-        auth_request /user/is_privileged;
+        auth_request /has_media_access;
         limit_req zone=ip burst=12 delay=8;
 
         # enable cache

@@ -2,7 +2,7 @@ import os
 import unittest
 import unittest.mock
 import json
-from .context import create_app, default_test_config
+from .context import create_app, default_test_config, create_test_session
 from backend.data import db
 from backend.data import dao_users
 from backend.data import dao_session
@@ -54,13 +54,7 @@ class GetUsersUnitTest(unittest.TestCase):
 
     @unittest.mock.patch('time.time', return_value=1000)
     def test_expired_access_token_headers_returns_unauthorized(self, mock_time):
-        session = Session(
-            user_id=2,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=950,
-            refresh_expires_at=1050,
-        )
+        session = create_test_session(user_id=2, access_token='token', access_expires_at=1, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Invalid Authorization!','code':441}
         
@@ -73,13 +67,7 @@ class GetUsersUnitTest(unittest.TestCase):
 
     @unittest.mock.patch('time.time', return_value=1000)
     def test_sending_non_saved_user_error_is_shown(self, mock_time):
-        session = Session(
-            user_id=2,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=2, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Invalid Authorization!','code':442}
 
@@ -98,13 +86,7 @@ class GetUsersUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Not Authorized!','code':460}
 
@@ -126,13 +108,7 @@ class GetUsersUnitTest(unittest.TestCase):
         user_id = self.insert_user(user)
         self.insert_user(RegisteringUser(name = 'guest-1',password = 'citrom',otp_secret = ''))
         self.insert_user(RegisteringUser(name = 'guest-2',password = 'citrom',otp_secret = ''))
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {
             'users':[

@@ -1,7 +1,6 @@
 from flask import request, jsonify
 from .require_decorators import get_cropped_username
 from .require_decorators import get_cropped_otp
-from .require_decorators import get_cropped_token
 from . import token_generator_util
 from .data import dao_registration_tokens
 from .data import dao_reset_password_tokens

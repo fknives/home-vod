@@ -2,10 +2,9 @@ import os
 import unittest
 import unittest.mock
 import json
-from .context import create_app, default_test_config
+from .context import create_app, default_test_config, create_test_session
 from backend.data import db
 from backend.data import dao_session
-from backend.data.data_models import RegisteringUser
 from backend.data.data_models import Session
 
 class RefreshTokenUnitTest(unittest.TestCase):
@@ -52,19 +51,19 @@ class RefreshTokenUnitTest(unittest.TestCase):
 
     @unittest.mock.patch('time.time', return_value=1000)
     def test_if_token_is_exists_2_times_then_invalid(self, mock_time):
-        session1 = Session(
-            user_id = 1,
-            access_token = "a",
-            refresh_token = "token",
-            access_expires_at = 5000,
-            refresh_expires_at = 5000,
+        session1 = create_test_session(
+            user_id=1,
+            access_token='a',
+            refresh_token="token",
+            access_expires_at=5000,
+            refresh_expires_at=5000
         )
-        session2 = Session(
-            user_id = 2,
-            access_token = "b",
-            refresh_token = "token",
-            access_expires_at = 6000,
-            refresh_expires_at = 6000,
+        session2 = create_test_session(
+            user_id=2,
+            access_token='b',
+            refresh_token="token",
+            access_expires_at=6000,
+            refresh_expires_at=6000
         )
         self.insert_session(session1)
         self.insert_session(session2)
@@ -78,12 +77,12 @@ class RefreshTokenUnitTest(unittest.TestCase):
 
     @unittest.mock.patch('time.time', return_value=1000)
     def test_expired_refresh_token_then_invalid(self, mock_time):
-        session = Session(
-            user_id = 1,
-            access_token = "a",
-            refresh_token = "token",
-            access_expires_at = 6000,
-            refresh_expires_at = 900,
+        session = create_test_session(
+            user_id=1,
+            access_token='a',
+            refresh_token="token",
+            access_expires_at=6000,
+            refresh_expires_at=900
         )
         self.insert_session(session)
         expected = {'message':'Invalid Refresh Token!','code':450}
@@ -96,15 +95,15 @@ class RefreshTokenUnitTest(unittest.TestCase):
 
     @unittest.mock.patch('time.time', return_value=1000)
     def test_expired_access_token_but_non_expires_refresh_token_then_new_is_returned(self, mock_time):
-        session = Session(
-            user_id = 1,
-            access_token = "a",
-            refresh_token = "token",
-            access_expires_at = 900,
-            refresh_expires_at = 6000,
+        session = create_test_session(
+            user_id=1,
+            access_token='a',
+            refresh_token="token",
+            access_expires_at=900,
+            refresh_expires_at=6000
         )
         self.insert_session(session)
-        expected_keys = {'access_token', 'refresh_token', 'expires_at'}
+        expected_keys = {'access_token', 'refresh_token', 'media_token', 'expires_at'}
         
         response = self.client.post(self.url_path, data={'refresh_token': 'token'})
         actual_response_json = json.loads(response.data.decode())

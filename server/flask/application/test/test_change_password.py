@@ -2,7 +2,7 @@ import os
 import unittest
 import unittest.mock
 import json
-from .context import create_app, default_test_config
+from .context import create_app, default_test_config, create_test_session
 from backend.data import db
 from backend.data import dao_users
 from backend.data import dao_session
@@ -58,13 +58,7 @@ class PasswordChangeUnitTest(unittest.TestCase):
 
     @unittest.mock.patch('time.time', return_value=1000)
     def test_expired_access_token_headers_returns_unauthorized(self, mock_time):
-        session = Session(
-            user_id=2,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=950,
-            refresh_expires_at=1050,
-        )
+        session = create_test_session(user_id=2, access_token='token', access_expires_at=1, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Invalid Authorization!','code':441}
         
@@ -76,13 +70,7 @@ class PasswordChangeUnitTest(unittest.TestCase):
 
     @unittest.mock.patch('time.time', return_value=1000)
     def test_sending_non_saved_user_error_is_shown(self, mock_time):
-        session = Session(
-            user_id=2,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=2, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Invalid Authorization!','code':442}
 
@@ -101,13 +89,7 @@ class PasswordChangeUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Invalid Token!','code':431}
 
@@ -126,13 +108,7 @@ class PasswordChangeUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Invalid Token!','code':431}
 
@@ -152,13 +128,7 @@ class PasswordChangeUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         correct_code = 585501 #for 1000 and base32secret3232
         expected = {'message':'Invalid Password!','code':421}
@@ -178,13 +148,7 @@ class PasswordChangeUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         correct_code = 585501 #for 1000 and base32secret3232
         expected = {'message':'New Password cannot be empty!','code':422}
@@ -204,13 +168,7 @@ class PasswordChangeUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         correct_code = 585501 #for 1000 and base32secret3232
         expected = {'message':'Invalid Password!','code':421}
@@ -230,15 +188,9 @@ class PasswordChangeUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
-        expected_keys = {'access_token', 'refresh_token', 'expires_at'}
+        expected_keys = {'access_token', 'media_token', 'refresh_token', 'expires_at'}
         
         correct_code = 585501 #for 1000 and base32secret3232
         data = {'password':'pass', 'new_password': 'pass2', 'otp': correct_code}
@@ -258,13 +210,7 @@ class PasswordChangeUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         correct_code = 585501 #for 1000 and base32secret3232
         change_pass_data = {'password':'pass', 'new_password': 'pass2', 'otp': correct_code}
@@ -287,19 +233,13 @@ class PasswordChangeUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         correct_code = 585501 #for 1000 and base32secret3232
         change_pass_data = {'password':'pass', 'new_password': 'pass2', 'otp': correct_code}
         response = self.client.post(self.url_path, data=change_pass_data, headers={'Authorization': 'token'})
         session_response = json.loads(response.data.decode())
-        expected_keys = {'access_token', 'refresh_token', 'expires_at'}
+        expected_keys = {'access_token', 'refresh_token', 'media_token', 'expires_at'}
         
         data = {'password':'pass2', 'new_password': 'pass3', 'otp': correct_code}
         response = self.client.post(self.url_path, data=data, headers={'Authorization': session_response['access_token']})

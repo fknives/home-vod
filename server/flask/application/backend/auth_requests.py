@@ -9,6 +9,8 @@ from .data.data_models import DataError
 from .data.data_models import RegisteringUser
 from .data.data_models import User
 from .data.data_models import ResponseCode
+from .data.data_models import Session
+from math import trunc
 
 def handle_register(username, password):
     one_time_password = get_cropped_otp(request.form.get('otp') or '')
@@ -42,12 +44,7 @@ def handle_otp_verification(user: User):
         dao_users.update_user_otp_verification(user.id, True)
         session = token_generator_util.generate_session(user.id)
         dao_session.insert_user_session(session)
-        sessionResponse = jsonify({
-            'access_token': session.access_token,
-            'refresh_token': session.refresh_token,
-            'expires_at': session.access_expires_at
-        })
-        return sessionResponse, 200
+        return _jsonify_session(session), 200
     else:
         errorResponse = jsonify({'message':'Invalid Token!','code':ResponseCode.INVALID_OTP})
         return errorResponse, 400
@@ -74,9 +71,12 @@ def handle_refresh_token():
     new_session = token_generator_util.generate_session(user_id)
     dao_session.swap_refresh_session(refresh_token = refresh_token, session = new_session)
         
-    sessionResponse = jsonify({
-        'access_token': new_session.access_token,
-        'refresh_token': new_session.refresh_token,
-        'expires_at': new_session.access_expires_at
-    })
-    return sessionResponse, 200
+    return _jsonify_session(new_session), 200
+
+def _jsonify_session(session: Session):
+    return jsonify({
+        'access_token': session.access_token,
+        'media_token': session.media_token,
+        'refresh_token': session.refresh_token,
+        'expires_at': trunc(session.access_expires_at)
+        })
