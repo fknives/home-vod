@@ -27,6 +27,7 @@ CREATE TABLE reset_password_token (
 CREATE TABLE session (
   user_id INTEGER NOT NULL,
   access_token TEXT NOT NULL,
+  media_token TEXT NOT NULL,
   refresh_token TEXT NOT NULL,
   access_expires_at INTEGER NOT NULL,
   refresh_expires_at INTEGER NOT NULL,

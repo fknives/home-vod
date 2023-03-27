@@ -2,7 +2,7 @@ import os
 import unittest
 import unittest.mock
 import json
-from .context import create_app, default_test_config
+from .context import create_app, default_test_config, create_test_session
 from backend.data import db
 from backend.data import dao_users
 from backend.data import dao_session
@@ -52,13 +52,7 @@ class AddFileMetadataUnitTest(unittest.TestCase):
         self.assertEqual(expected, actual_response_json)
 
     def test_expired_access_token_headers_returns_unauthorized(self):
-        session = Session(
-            user_id=2,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=950,
-            refresh_expires_at=1050,
-        )
+        session = create_test_session(user_id=2, access_token='token', access_expires_at=1, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Invalid Authorization!','code':441}
         
@@ -68,22 +62,17 @@ class AddFileMetadataUnitTest(unittest.TestCase):
         self.assertEqual(401, response.status_code)
         self.assertEqual(expected, actual_response_json)
 
-    def test_sending_non_saved_user_error_is_shown(self):
-        session = Session(
-            user_id=2,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+    @unittest.mock.patch('time.time', return_value=1000)
+    def test_sending_non_saved_user_error_is_shown(self, mock_time):
+        session = create_test_session(user_id=2, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
-        expected = {'message':'Invalid Authorization!','code':441}
+        expected = {'message':'Invalid Authorization!','code':442}
 
         header = {'Authorization': 'token'}
         response = self.client.post(self.url_path, headers = header)
 
         actual_response_json = json.loads(response.data.decode())
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(400, response.status_code)
         self.assertEqual(expected, actual_response_json)
 
     @unittest.mock.patch('time.time', return_value=1000)
@@ -94,13 +83,7 @@ class AddFileMetadataUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'File MetaData Saved!','code':203}
 
@@ -120,13 +103,7 @@ class AddFileMetadataUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'message':'Couldn\'t save metadata!','code':415}
 
@@ -146,13 +123,7 @@ class AddFileMetadataUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected_of_key_query = {'key': 'value'}
         expected_of_key2_query = {'key2':'value2'}
@@ -181,13 +152,7 @@ class AddFileMetadataUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'key': 'value1'}
 
@@ -211,13 +176,7 @@ class AddFileMetadataUnitTest(unittest.TestCase):
             otp_secret = 'base32secret3232'
         )
         user_id = self.insert_user(user)
-        session = Session(
-            user_id=user_id,
-            access_token='token',
-            refresh_token='',
-            access_expires_at=1050,
-            refresh_expires_at=2000
-        )
+        session = create_test_session(user_id=user_id, access_token='token', access_expires_at=1050, refresh_expires_at=2000)
         self.insert_session(session)
         expected = {'key': 'value'}
 

@@ -20,13 +20,26 @@ def get_user_for_token(access_token: str):
         return rows[0][0]
     return None
 
-_INSER_SESSION_SQL = "INSERT INTO session(user_id, access_token, refresh_token, access_expires_at, refresh_expires_at)"\
-"VALUES(:user_id, :access_token, :refresh_token, :access_expires_at, :refresh_expires_at)"
+_GET_USER_FOR_MEDIA_TOKEN_SQL = "SELECT user_id FROM session where media_token = :token and access_expires_at >= :time"
+def get_user_for_media_token(media_token: str):
+    db = get_db()
+    _delete_expired_tokens(db)
+    db_cursor = db.cursor()
+    db_cursor.execute(_GET_USER_FOR_MEDIA_TOKEN_SQL, {"token": media_token, "time": time.time()})
+    rows = db_cursor.fetchall()
+    
+    if (len(rows) == 1):
+        return rows[0][0]
+    return None
+
+_INSER_SESSION_SQL = "INSERT INTO session(user_id, access_token, media_token, refresh_token, access_expires_at, refresh_expires_at)"\
+"VALUES(:user_id, :access_token, :media_token, :refresh_token, :access_expires_at, :refresh_expires_at)"
 
 def _session_insert(db_cursor, session: Session):
     params = {
         "user_id": session.user_id,
         "access_token": session.access_token,
+        "media_token": session.media_token,
         "refresh_token": session.refresh_token,
         "access_expires_at": session.access_expires_at,
         "refresh_expires_at": session.refresh_expires_at,

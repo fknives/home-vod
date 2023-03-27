@@ -2,9 +2,10 @@ from enum import Enum
 from enum import IntEnum
 
 class Session:
-    def __init__(self, user_id, access_token, refresh_token, access_expires_at, refresh_expires_at):
+    def __init__(self, user_id, access_token, media_token, refresh_token, access_expires_at, refresh_expires_at):
         self.user_id = user_id
         self.access_token = access_token
+        self.media_token = media_token
         self.refresh_token = refresh_token
         self.access_expires_at = access_expires_at
         self.refresh_expires_at = refresh_expires_at
@@ -14,12 +15,13 @@ class Session:
             return False
         return self.user_id == other.user_id \
             and self.access_token == other.access_token \
+            and self.media_token == other.media_token \
             and self.refresh_token == other.refresh_token \
             and self.access_expires_at == other.access_expires_at \
             and self.refresh_expires_at == other.refresh_expires_at \
     
     def __str__(self):
-        return 'Session(user_id={},access_token={},refresh_token={},access_expires_at={},refresh_expires_at={})'.format(self.user_id, self.access_token, self.refresh_token, self.access_expires_at, self.refresh_expires_at)
+        return 'Session(user_id={},access_token={},media_token={},refresh_token={},access_expires_at={},refresh_expires_at={})'.format(self.user_id, self.access_token, self.media_token, self.refresh_token, self.access_expires_at, self.refresh_expires_at)
 
     def __repr__(self):
         return self.__str__()
@@ -88,18 +90,25 @@ class ResponseCode(IntEnum):
     SUCCESS_RESET_OTP_VERIFICATION = 207
     SUCCESS_SAVED_RESET_PASSWORD_TOKEN = 208
     SUCCESS_DELETED_TOKEN = 209
+    SUCCESS_MEDIA_ACCESS = 220
 
-
+    EMPTY_USERNAME = 410
     ALREADY_TAKEN_USERNAME = 411
     NOT_FOUND_USER = 412
     INVALID_USERNAME_TO_EDIT = 413
     CANT_SAVE_USER_FILE_METADATA = 414
     CANT_SAVE_FILE_METADATA = 415
     INVALID_FILE_KEY = 416
+    EMPTY_PASSWORD = 420
     INVALID_PASSWORD = 421
     INVALID_NEW_PASSWORD = 422
     UNKNOWN_REGISTRATION_TOKEN = 430
     INVALID_OTP = 431
+    MISSING_AUTHORIZATION = 440
+    INVALID_AUTHORIZATION = 441
+    UNASSOCIATED_AUTHORIZATION = 442
+    MISSING_MEDIA_AUTHORIZATION = 443
+    INVALID_MEDIA_AUTHORIZATION = 444
     INVALID_REFRESH_TOKEN = 450
     INVALID_RESET_PASSWORD_TOKEN = 459
     INVALID_REGISTRATION_TOKEN = 460

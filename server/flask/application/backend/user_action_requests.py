@@ -1,5 +1,4 @@
 from flask import request, jsonify
-import json
 from .require_decorators import get_cropped_password
 from .require_decorators import get_cropped_otp
 from .require_decorators import get_cropped_key
@@ -11,6 +10,7 @@ from .data import dao_file_metadata_of_user
 from .data import dao_file_metadata
 from .data.data_models import User
 from .data.data_models import ResponseCode
+from .auth_requests import _jsonify_session as jsonify_session
 
 def handle_change_password(user: User):
     password = get_cropped_password(request.form.get('password'))
@@ -31,12 +31,7 @@ def handle_change_password(user: User):
     session = token_generator_util.generate_session(user.id)
     dao_users.update_user_password(user_id = user.id, new_password = new_password)
     dao_session.create_new_single_session(session = session)
-    sessionResponse = jsonify({
-        'access_token': session.access_token,
-        'refresh_token': session.refresh_token,
-        'expires_at': session.access_expires_at
-    })
-    return sessionResponse, 200
+    return jsonify_session(session), 200
 
 def handle_reset_password(username: str, password: str):
     reset_password_token = get_cropped_otp(request.form.get('reset_password_token'))

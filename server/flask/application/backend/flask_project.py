@@ -12,6 +12,7 @@ from .require_decorators import require_user_priviliged_after_session
 from . import auth_requests as auth_requests_handler
 from . import admin_requests as admin_requests_handler
 from . import user_action_requests as user_action_requests_handler
+from . import media_access_requests as media_access_requests_handler
 
 # for chrome to accept the certificate run in console `endCommand(SecurityInterstitialCommandId.CMD_PROCEED)`
 # to restart = `uwsgi --ini home-vod-server.ini` like in Dockerimage
@@ -135,6 +136,12 @@ def create_app(test_config=None):
     @require_user_priviliged_after_session
     def delete_registration_token(user: User):
         return admin_requests_handler.handle_delete_registration_token(user = user)
+#   endregion
+
+#   region media access
+    @app.route("/has_media_access", methods=['GET'])
+    def has_media_access():
+        return media_access_requests_handler.handle_has_media_access()
 #   endregion
 
     return app
