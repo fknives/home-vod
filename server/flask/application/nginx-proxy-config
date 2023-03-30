@@ -6,6 +6,7 @@ limit_req_zone $binary_remote_addr zone=restricted_ip:10m rate=10r/m;
 server {
     server_name _;
     listen       8080  default_server;
+
     return       404;
 }
 
@@ -20,13 +21,11 @@ server {
     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256;
     ssl_prefer_server_ciphers   on;
 
-    root /server;
-
     # static media
     location /media {
         root /media-data/;
         autoindex on;
-        auth_request /has_media_access;
+        auth_request /require_media_access;
         limit_req zone=ip burst=12 delay=8;
 
         # enable cache
@@ -39,6 +38,16 @@ server {
         # if_modified_since off;
         # expires off;
         # etag off;
+    }
+
+    # auth request, passes query as header
+    location /require_media_access {
+        internal;
+        proxy_pass https://localhost:443/has_media_access;
+        proxy_pass_request_body off;
+        proxy_pass_request_headers on;
+        proxy_set_header      Content-Length: "";
+        proxy_set_header      X-Original-URI $request_uri;
     }
 
     # flask server
